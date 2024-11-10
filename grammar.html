@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grammar Game</title>
+<style>
+    /* Styling from your original design */
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f5f5f7;
+        color: #333;
+    }
+
+    .container {
+        width: 90%;
+        max-width: 400px;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 24px;
+        color: #007aff;
+        margin-bottom: 20px;
+    }
+
+    .sentence {
+        font-size: 18px;
+        color: #333;
+        margin-bottom: 15px;
+    }
+
+    input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+
+    button {
+        background-color: #007aff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    button:hover {
+        background-color: #005bb5;
+    }
+
+    .result {
+        font-size: 16px;
+        margin-top: 10px;
+    }
+
+    .next-btn, .show-results-btn {
+        display: none;
+        margin-top: 20px;
+        background-color: #4cd964;
+    }
+
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1>Grammar Game 🎉</h1>
+        <p id="sentence" class="sentence"></p>
+        <input type="text" id="userInput" placeholder="Type the correct sentence" />
+        <button onclick="checkAnswer()">Submit</button>
+        <p id="result" class="result"></p>
+        <button onclick="nextQuestion()" class="next-btn">Next Question</button>
+        <button onclick="showResults()" class="show-results-btn">Show Results</button>
+        <div id="finalResult" class="result"></div>
+    </div>
+    <script>
+    const sentences = [
+        { incorrect: "She go to the store yesterday.", correct: "She went to the store yesterday." },
+        { incorrect: "He don't like the movie.", correct: "He doesn't like the movie." },
+        { incorrect: "They was at the party.", correct: "They were at the party." }
+    ];
+
+    let currentQuestion = 0;
+    let correctCount = 0;
+    let totalQuestions = sentences.length;
+    let mistakes = {
+        capitalization: 0,
+        punctuation: 0,
+        verb: 0
+    };
+
+    function displayQuestion() {
+        document.getElementById("sentence").innerText = sentences[currentQuestion].incorrect;
+        document.getElementById("result").innerText = "";
+        document.getElementById("userInput").value = "";
+        document.querySelector(".next-btn").style.display = "none";
+        document.querySelector(".show-results-btn").style.display = "none";
+    }
+
+    function checkAnswer() {
+        const userAnswer = document.getElementById("userInput").value.trim();
+        const correctAnswer = sentences[currentQuestion].correct;
+
+        if (userAnswer === correctAnswer) {
+            document.getElementById("result").innerText = "🎉 Yay! That's correct! 🎉";
+            correctCount++;
+            document.querySelector(".next-btn").style.display = "block";
+        } else {
+            let suggestions = getSuggestions(userAnswer, correctAnswer);
+            document.getElementById("result").innerText = `Oops! 🤔 The correct answer is: "${correctAnswer}".\nHere's a hint: ${suggestions}`;
+            document.querySelector(".next-btn").style.display = "block";
+        }
+
+        if (currentQuestion === totalQuestions - 1) {
+            document.querySelector(".next-btn").style.display = "none";
+            document.querySelector(".show-results-btn").style.display = "block";
+        }
+    }
+
+    function getSuggestions(userAnswer, correctAnswer) {
+        let suggestions = [];
+
+        // Capitalization check
+        if (userAnswer[0] && userAnswer[0] !== userAnswer[0].toUpperCase()) {
+            suggestions.push("Start with a capital letter! 🅰️");
+            mistakes.capitalization++;
+        }
+
+        // Punctuation check
+        if (!userAnswer.endsWith(".")) {
+            suggestions.push("End the sentence with a period! ⚫️");
+            mistakes.punctuation++;
+        }
+
+        // Verb form checks for specific errors
+        if (sentences[currentQuestion].incorrect.includes("go") && userAnswer.includes("go")) {
+            suggestions.push("Use 'went' instead of 'go' for past tense. ⏳");
+            mistakes.verb++;
+        } else if (sentences[currentQuestion].incorrect.includes("don't") && userAnswer.includes("don't")) {
+            suggestions.push("Use 'doesn't' instead of 'don't'. 🚫");
+            mistakes.verb++;
+        } else if (sentences[currentQuestion].incorrect.includes("was") && userAnswer.includes("was")) {
+            suggestions.push("Use 'were' instead of 'was' for plural subjects. 👥");
+            mistakes.verb++;
+        }
+
+        return suggestions.length > 0 ? suggestions.join(" ") : "Double-check for grammar! 📚";
+    }
+
+    function nextQuestion() {
+        currentQuestion++;
+        if (currentQuestion < totalQuestions) {
+            displayQuestion();
+        }
+    }
+
+    function showResults() {
+        let finalMessage = `🎉 Congratulations! You've completed the game! 🎉\nYou got ${correctCount} out of ${totalQuestions} correct.\n`;
+        
+        // Provide feedback based on common errors
+        let feedback = "Here’s how you can improve:\n";
+        if (mistakes.capitalization > 0) {
+            feedback += `- Remember to start sentences with a capital letter! 🅰️ (You missed it ${mistakes.capitalization} times)\n`;
+        }
+        if (mistakes.punctuation > 0) {
+            feedback += `- Don’t forget to end sentences with a period! ⚫️ (You missed it ${mistakes.punctuation} times)\n`;
+        }
+        if (mistakes.verb > 0) {
+            feedback += `- Watch out for verb tenses and agreements! 👥 (You had ${mistakes.verb} verb issues)\n`;
+        }
+
+        if (mistakes.capitalization === 0 && mistakes.punctuation === 0 && mistakes.verb === 0) {
+            feedback = "Amazing job! You had no common mistakes! 🎉💯";
+        }
+
+        document.getElementById("finalResult").innerText = finalMessage + feedback;
+    }
+
+    window.onload = displayQuestion;
+    </script>
+</body>
+</html>
